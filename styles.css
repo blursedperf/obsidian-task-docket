@@ -1,0 +1,381 @@
+/* Task Docket. Uses Obsidian's variables only, so it follows any theme. */
+
+.task-docket {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-2);
+	padding: var(--size-4-3) var(--size-4-4);
+}
+
+/* ---------- toolbar ---------- */
+.task-docket-toolbar {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-2);
+	position: sticky;
+	top: calc(-1 * var(--size-4-3));
+	z-index: 2;
+	margin: calc(-1 * var(--size-4-3)) calc(-1 * var(--size-4-4)) 0;
+	padding: var(--size-4-3) var(--size-4-4) var(--size-4-2);
+	background-color: var(--background-primary);
+	border-bottom: var(--border-width) solid var(--background-modifier-border);
+}
+
+.task-docket-search input {
+	width: 100%;
+}
+
+.task-docket-controls {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-4-2);
+}
+
+.task-docket-segmented {
+	display: inline-flex;
+	padding: 2px;
+	gap: 2px;
+	border: var(--border-width) solid var(--background-modifier-border);
+	border-radius: var(--button-radius, var(--radius-s));
+	background-color: var(--background-secondary);
+}
+
+.task-docket .task-docket-segmented .task-docket-seg-btn {
+	background: transparent;
+	border: none;
+	box-shadow: none;
+	color: var(--text-muted);
+	padding: 2px 10px;
+	height: auto;
+	min-height: 26px;
+	font-size: var(--font-ui-small);
+}
+
+.task-docket .task-docket-segmented .task-docket-seg-btn:hover {
+	color: var(--text-normal);
+	background-color: var(--background-modifier-hover);
+}
+
+.task-docket .task-docket-segmented .task-docket-seg-btn.is-active {
+	color: var(--text-normal);
+	background-color: var(--background-primary);
+	box-shadow: 0 0 0 var(--border-width) var(--background-modifier-border);
+	font-weight: var(--font-semibold);
+}
+
+.task-docket-select {
+	max-width: 15em;
+}
+
+.task-docket-add {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	margin-inline-start: auto;
+}
+
+.task-docket-add-icon {
+	display: inline-flex;
+	--icon-size: var(--icon-s);
+}
+
+.task-docket-summary {
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+}
+
+.task-docket-summary .is-overdue {
+	color: var(--text-error);
+	font-weight: var(--font-semibold);
+}
+
+.task-docket-summary .is-today {
+	color: var(--text-accent);
+	font-weight: var(--font-semibold);
+}
+
+.task-docket-sep {
+	color: var(--text-faint);
+}
+
+/* ---------- groups ----------
+   Buttons are scoped under .task-docket so they outrank Obsidian's button:not(.clickable-icon). */
+.task-docket-list {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-3);
+	padding-bottom: var(--size-4-6);
+}
+
+.task-docket .task-docket-group-head {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-3);
+	width: 100%;
+	height: auto;
+	padding: var(--size-2-2) 0;
+	background: transparent;
+	border: none;
+	border-bottom: var(--border-width) solid var(--background-modifier-border);
+	border-radius: 0;
+	box-shadow: none;
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-semibold);
+	text-align: start;
+	cursor: var(--cursor);
+}
+
+.task-docket .task-docket-group-head:hover {
+	background: transparent;
+	color: var(--text-accent);
+}
+
+.task-docket-chevron {
+	display: inline-flex;
+	color: var(--text-faint);
+	--icon-size: var(--icon-xs);
+}
+
+.task-docket-group-count {
+	margin-inline-start: auto;
+	min-width: 1.6em;
+	padding: 0 6px;
+	border-radius: var(--radius-s);
+	background-color: var(--background-modifier-hover);
+	color: var(--text-muted);
+	font-weight: var(--font-normal);
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+}
+
+.task-docket-group.is-overdue .task-docket-group-label {
+	color: var(--text-error);
+}
+
+.task-docket-group.is-today .task-docket-group-label {
+	color: var(--text-accent);
+}
+
+.task-docket-group.is-done .task-docket-group-label {
+	color: var(--text-muted);
+}
+
+.task-docket .task-docket-more {
+	align-self: flex-start;
+	margin: var(--size-2-2) 0 0 calc(var(--checkbox-size) + var(--size-4-3));
+	font-size: var(--font-ui-smaller);
+}
+
+/* ---------- task rows ---------- */
+.task-docket-task {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--size-4-3);
+	padding: var(--size-4-2) var(--size-2-2);
+	border-bottom: var(--border-width) solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+}
+
+.task-docket-task:hover {
+	background-color: var(--background-modifier-hover);
+}
+
+.task-docket-check {
+	flex-shrink: 0;
+	margin: 0.2em 0 0;
+	cursor: var(--cursor);
+}
+
+.task-docket-main {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-2-2);
+}
+
+.task-docket-text {
+	color: var(--text-normal);
+	line-height: var(--line-height-tight);
+	overflow-wrap: anywhere;
+	cursor: var(--cursor-link);
+}
+
+.task-docket-task.is-done .task-docket-text,
+.task-docket-task.is-cancelled .task-docket-text {
+	color: var(--text-faint);
+	text-decoration: line-through;
+}
+
+.task-docket-link {
+	color: var(--link-color);
+	text-decoration: var(--link-decoration);
+	cursor: var(--cursor-link);
+}
+
+.task-docket-link:hover {
+	color: var(--link-color-hover);
+}
+
+.task-docket-tag {
+	cursor: var(--cursor-link);
+}
+
+.task-docket-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-2-2) var(--size-2-3);
+}
+
+.task-docket-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 1px 6px;
+	border: var(--border-width) solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	line-height: 1.5;
+	white-space: nowrap;
+	--icon-size: 12px;
+	--icon-stroke: 2px;
+}
+
+.task-docket-chip svg {
+	flex-shrink: 0;
+}
+
+.task-docket-due.is-overdue {
+	color: var(--text-error);
+	border-color: currentColor;
+	font-weight: var(--font-semibold);
+}
+
+.task-docket-due.is-today {
+	color: var(--text-accent);
+	border-color: currentColor;
+	font-weight: var(--font-semibold);
+}
+
+.task-docket-priority.is-p5,
+.task-docket-priority.is-p4 {
+	color: var(--text-error);
+}
+
+.task-docket-priority.is-p3 {
+	color: var(--text-warning);
+}
+
+.task-docket-priority.is-p1,
+.task-docket-priority.is-p0 {
+	color: var(--text-faint);
+}
+
+.task-docket-note {
+	max-width: 16em;
+	cursor: var(--cursor-link);
+}
+
+.task-docket-note span {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.task-docket-note:hover {
+	color: var(--text-normal);
+	border-color: var(--background-modifier-border-hover);
+}
+
+.task-docket-menu-btn {
+	flex-shrink: 0;
+	opacity: 0;
+	transition: opacity var(--anim-duration-fast, 0.12s) ease;
+}
+
+.task-docket-task:hover .task-docket-menu-btn,
+.task-docket-menu-btn:focus-visible {
+	opacity: 1;
+}
+
+/* ---------- empty state ---------- */
+.task-docket-empty {
+	padding: var(--size-4-8) var(--size-4-4);
+	text-align: center;
+}
+
+.task-docket-empty-title {
+	font-weight: var(--font-semibold);
+	margin-bottom: var(--size-2-3);
+}
+
+.task-docket-empty-desc {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	max-width: 32em;
+	margin: 0 auto;
+}
+
+/* ---------- dialogs ---------- */
+.task-docket-modal .task-docket-modal-text {
+	width: 100%;
+}
+
+.task-docket-modal .setting-item:first-child .setting-item-control {
+	flex: 1 1 60%;
+}
+
+.task-docket-modal-footer .setting-item-control {
+	gap: var(--size-4-2);
+}
+
+/* ---------- status bar ---------- */
+.task-docket-status.has-overdue {
+	color: var(--text-error);
+}
+
+/* ---------- phones and touch ---------- */
+.is-mobile .task-docket {
+	padding-bottom: calc(var(--size-4-4) + var(--view-bottom-spacing, 0px));
+}
+
+.is-mobile .task-docket-menu-btn {
+	opacity: 1;
+}
+
+.is-mobile .task-docket-task {
+	padding: var(--size-4-3) var(--size-2-2);
+}
+
+.is-mobile .task-docket-check {
+	width: 22px;
+	height: 22px;
+}
+
+@media (max-width: 600px) {
+	.task-docket-controls {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.task-docket-segmented {
+		grid-column: 1 / -1;
+	}
+
+	.task-docket-segmented .task-docket-seg-btn {
+		flex: 1;
+	}
+
+	.task-docket-select {
+		max-width: none;
+		min-width: 0;
+	}
+
+	.task-docket-add {
+		grid-column: 1 / -1;
+		justify-content: center;
+		margin-inline-start: 0;
+	}
+}

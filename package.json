@@ -1,0 +1,37 @@
+{
+	"name": "obsidian-task-docket",
+	"version": "1.0.0",
+	"description": "Collect every checkbox task in your vault into one list you can sort by urgency, due date, time or priority, check off, reschedule and reprioritize.",
+	"main": "main.js",
+	"scripts": {
+		"dev": "node esbuild.config.mjs",
+		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+		"test": "esbuild test/docket.test.ts --bundle --platform=node --format=cjs | node && node scripts/offline-audit.mjs"
+	},
+	"keywords": [
+		"obsidian",
+		"obsidian-plugin",
+		"tasks",
+		"todo",
+		"checklist",
+		"agenda",
+		"offline"
+	],
+	"author": "blursedperf",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/blursedperf/obsidian-task-docket.git"
+	},
+	"bugs": {
+		"url": "https://github.com/blursedperf/obsidian-task-docket/issues"
+	},
+	"homepage": "https://github.com/blursedperf/obsidian-task-docket#readme",
+	"devDependencies": {
+		"@types/node": "^20.11.0",
+		"esbuild": "0.21.5",
+		"obsidian": "^1.13.0",
+		"tslib": "2.6.2",
+		"typescript": "5.4.5"
+	}
+}
