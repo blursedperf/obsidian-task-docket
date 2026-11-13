@@ -46,7 +46,7 @@ Task Docket reads both common formats, so tasks written for the Tasks or Datavie
 
 ## The docket
 
-Open it from the ribbon (checklist icon), the **Open task docket** command or the status bar.
+Open it from the ribbon (checklist icon), the **Task Docket: Open** command or the status bar.
 
 - **Sort** by urgency, due date and time, priority or note. Urgency weighs how soon a task is due (overdue first, then today, tomorrow and the coming week) against its priority, and pushes down tasks scheduled or starting in the future.
 - **Group** by due date (Overdue, Today, Tomorrow, Next 7 days, Later, No date), priority, note or tag, or not at all. Groups collapse.

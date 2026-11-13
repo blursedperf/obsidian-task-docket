@@ -20,7 +20,7 @@ export default class TaskDocketPlugin extends Plugin {
 		this.registerView(VIEW_TYPE_DOCKET, (leaf) => new TaskDocketView(leaf, this));
 
 		this.addRibbonIcon("list-checks", "Open task docket", () => void this.activateView());
-		this.addCommand({ id: "open", name: "Open task docket", callback: () => void this.activateView() });
+		this.addCommand({ id: "open", name: "Open", callback: () => void this.activateView() });
 		this.addCommand({ id: "add-task", name: "Add task", callback: () => this.openAddTask() });
 		this.addCommand({ id: "rebuild", name: "Rescan tasks", callback: () => void this.index.rebuild() });
 
@@ -46,7 +46,9 @@ export default class TaskDocketPlugin extends Plugin {
 	}
 
 	async loadSettings(): Promise<void> {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		const data: unknown = await this.loadData();
+		const saved = data !== null && typeof data === "object" ? (data as Partial<TaskDocketSettings>) : {};
+		this.settings = { ...DEFAULT_SETTINGS, ...saved };
 	}
 
 	async saveSettings(): Promise<void> {

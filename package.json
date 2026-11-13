@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-task-docket",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Collect every checkbox task in your vault into one list you can sort by urgency, due date, time or priority, check off, reschedule and reprioritize.",
 	"main": "main.js",
 	"scripts": {
