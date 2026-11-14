@@ -7,6 +7,7 @@ import {
 	setPriorityLine,
 	toggleTaskLine,
 } from "../src/task";
+import { dateOptions, findTrigger, inlineChoices, normaliseTrigger, parseTime, priorityOptions, removeTrigger } from "../src/inline";
 import { addDays, dueLabel, filterTasks, groupTasks, sortTasks, urgency, whenBucket } from "../src/arrange";
 
 const T = (raw: string, line = 0) => {
@@ -133,6 +134,78 @@ const T = (raw: string, line = 0) => {
 	assert.strictEqual(dueLabel("2026-11-13", today), "Today");
 	assert.strictEqual(dueLabel("2026-11-10", today), "3 days overdue");
 	assert.strictEqual(dueLabel("2026-12-25", today), "2026-12-25");
+}
+
+// Inline task properties (today is Friday 2026-11-13)
+{
+	const today = "2026-11-13";
+	// Trigger: only at the start of a word on a task line, after the checkbox
+	assert.deepStrictEqual(findTrigger("- [ ] Read case @tom", "@"), { start: 16, query: "tom" });
+	assert.deepStrictEqual(findTrigger("  1. [x] x @fri 9a", "@"), { start: 11, query: "fri 9a" });
+	assert.deepStrictEqual(findTrigger("- [ ] @", "@"), { start: 6, query: "" });
+	assert.strictEqual(findTrigger("- Read case @tom", "@"), null, "not a task");
+	assert.strictEqual(findTrigger("- [ ] mail jo@example.com", "@"), null, "e-mail");
+	assert.strictEqual(findTrigger("- [ ] meet @fri 9am then", "@"), null, "three words");
+	assert.strictEqual(findTrigger("- [ ]@tom", "@"), null, "no space after checkbox");
+	assert.deepStrictEqual(findTrigger("- [ ] x //hi", "//"), { start: 8, query: "hi" });
+	assert.strictEqual(normaliseTrigger(" "), "@");
+	assert.strictEqual(normaliseTrigger("a b"), "@");
+	assert.strictEqual(normaliseTrigger("//"), "//");
+
+	// Times
+	assert.strictEqual(parseTime("9am"), "09:00");
+	assert.strictEqual(parseTime("12am"), "00:00");
+	assert.strictEqual(parseTime("12pm"), "12:00");
+	assert.strictEqual(parseTime("9:30p"), "21:30");
+	assert.strictEqual(parseTime("17:00"), "17:00");
+	assert.strictEqual(parseTime("9"), null, "a bare number is not a time");
+	assert.strictEqual(parseTime("25:00"), null);
+	assert.strictEqual(parseTime("13pm"), null);
+
+	// Dates
+	const dates = (t: string) => dateOptions(t, today).map((d) => d.date);
+	assert.deepStrictEqual(dates("tod"), ["2026-11-13"]);
+	assert.deepStrictEqual(dates("tom"), ["2026-11-14"]);
+	assert.deepStrictEqual(dates("fri"), ["2026-11-20", "2026-11-27"], "the next Friday, not today");
+	assert.deepStrictEqual(dates("mon"), ["2026-11-16", "2026-11-23"]);
+	assert.deepStrictEqual(dates("3d"), ["2026-11-16"]);
+	assert.deepStrictEqual(dates("2w"), ["2026-11-27"]);
+	assert.deepStrictEqual(dates("2026-12-01"), ["2026-12-01"]);
+	assert.deepStrictEqual(dates("2026-02-30"), [], "not a real date");
+	assert.deepStrictEqual(dates("hearing"), []);
+	assert.strictEqual(dateOptions("mon", today)[1].label, "Monday next week");
+
+	// Priorities
+	assert.deepStrictEqual(priorityOptions("high"), [5, 4]);
+	assert.deepStrictEqual(priorityOptions("!!"), [4]);
+	assert.deepStrictEqual(priorityOptions("!!!"), [5]);
+	assert.deepStrictEqual(priorityOptions("lowe"), [0]);
+	assert.deepStrictEqual(priorityOptions("no"), [2]);
+
+	// Choices
+	const kinds = (q: string, hasDue = false) => inlineChoices(q, today, { hasDue }).map((c) => (c.kind === "due" ? `${c.date}${c.time ? " " + c.time : ""}` : c.kind === "priority" ? `p${c.priority}` : c.kind));
+	assert.deepStrictEqual(kinds(""), ["2026-11-13", "2026-11-14", "2026-11-20", "pick", "p5", "p4", "p3", "p1", "p0"]);
+	assert.ok(kinds("", true).includes("clear"));
+	assert.deepStrictEqual(kinds("tom 9am"), ["2026-11-14 09:00"]);
+	assert.deepStrictEqual(kinds("fri 9"), ["2026-11-20", "2026-11-27"], "time still being typed");
+	assert.deepStrictEqual(kinds("17:00"), ["2026-11-13 17:00", "2026-11-14 17:00"]);
+	assert.deepStrictEqual(kinds("fri hearing"), [], "second word is not a time");
+	assert.deepStrictEqual(kinds("the"), [], "ordinary word: no popup");
+	assert.deepStrictEqual(kinds("t"), ["2026-11-13", "2026-11-14", "2026-11-17", "2026-11-24", "2026-11-19", "2026-11-26"]);
+	assert.deepStrictEqual(kinds(" "), [], "trigger followed by a space");
+	const tomNine = inlineChoices("tom 9am", today)[0];
+	assert.ok(tomNine.kind === "due" && tomNine.label === "Tomorrow at 09:00");
+
+	// Applying: the typed trigger goes, the property is written in the line's format
+	const line = "- [ ] Read Donoghue @tom";
+	const stripped = removeTrigger(line, 20, 24);
+	assert.strictEqual(stripped, "- [ ] Read Donoghue");
+	assert.strictEqual(setDueLine(stripped, "2026-11-14", "09:00", "emoji"), "- [ ] Read Donoghue 📅 2026-11-14 ⏰ 09:00");
+	assert.strictEqual(setDueLine(stripped, "2026-11-14", null, "dataview"), "- [ ] Read Donoghue [due:: 2026-11-14]");
+	assert.strictEqual(removeTrigger("- [ ] Read @hi the case", 11, 14), "- [ ] Read the case");
+	const chained = setPriorityLine(removeTrigger("- [ ] Read 📅 2026-11-14 @high", 25, 30), 4, "dataview");
+	assert.strictEqual(chained, "- [ ] Read 📅 2026-11-14 ⏫", "keeps the line's existing emoji format");
+	assert.strictEqual(setDueLine("- [ ] Read [priority:: high]", "2026-11-14", null, "emoji"), "- [ ] Read [priority:: high] [due:: 2026-11-14]", "keeps the line's field format");
 }
 
 console.log("All Task Docket tests passed!");

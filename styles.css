@@ -331,6 +331,39 @@
 	gap: var(--size-4-2);
 }
 
+/* ---------- inline suggestions and the priority picker ---------- */
+.task-docket-suggestion {
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-2);
+}
+
+.task-docket-suggestion-icon {
+	display: inline-flex;
+	flex-shrink: 0;
+	color: var(--text-muted);
+	--icon-size: var(--icon-s);
+}
+
+/* The label keeps its line; the date beside it gives way on narrow screens. */
+.task-docket-suggestion-label {
+	flex: 0 0 auto;
+	white-space: nowrap;
+}
+
+.task-docket-suggestion-detail {
+	flex: 1 1 auto;
+	min-width: 0;
+	margin-inline-start: auto;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	text-align: end;
+	color: var(--text-faint);
+	font-size: var(--font-ui-smaller);
+	font-variant-numeric: tabular-nums;
+}
+
 /* ---------- status bar ---------- */
 .task-docket-status.has-overdue {
 	color: var(--text-error);

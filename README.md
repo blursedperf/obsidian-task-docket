@@ -44,6 +44,23 @@ Task Docket reads both common formats, so tasks written for the Tasks or Datavie
 
 `[x]` is done, `[-]` cancelled and `[/]` in progress. Tasks inside code blocks and frontmatter are ignored.
 
+### Setting dates and priorities as you type
+
+On a checklist line, type `@` to set a due date, time or priority without leaving the keyboard:
+
+| Type | Offers |
+| --- | --- |
+| `@` | Today, Tomorrow, In a week, Pick date and time…, and the priorities |
+| `@tom`, `@fri`, `@mon` | That day (weekdays offer the next two) |
+| `@fri 9am`, `@tomorrow 17:00` | That day at that time |
+| `@17:00`, `@9:30pm` | Today or tomorrow at that time |
+| `@3d`, `@2w`, `@2026-12-01` | In 3 days, in 2 weeks, a specific date |
+| `@high`, `@low`, `@!` `@!!` `@!!!` | A priority (`!` medium, `!!` high, `!!!` highest) |
+
+Choose with the arrow keys and Enter. The `@…` you typed is replaced by the date or priority, written at the end of the line in the format the line already uses, and the cursor stays at the end, ready for the next `@`. One undo reverts it. The suggestions only open at the start of a word on a checklist line, so e-mail addresses and ordinary text are left alone, and they do not interfere with Inline Autocomplete.
+
+With the mouse or on a phone, right-click (or long-press) a checklist line for **Task due today**, **Task due tomorrow**, **Set task due date…**, **Clear task due date** and **Set task priority…**. The same actions are commands (**Set due date for task at cursor**, **Set priority for task at cursor**, **Clear due date for task at cursor**) that you can pin to the mobile toolbar.
+
 ## The docket
 
 Open it from the ribbon (checklist icon), the **Task Docket: Open** command or the status bar. The ribbon button opens a menu showing how many tasks are overdue or due today, with **Open task docket**, **Add task…** and **Rescan tasks**.
@@ -69,6 +86,9 @@ Edits change only the task's own line. Before writing, Task Docket checks that t
 | Default sort / grouping | Urgency / Due date | How the docket opens. |
 | Open the docket in | A new tab | Or the right sidebar. |
 | Show due counts in the status bar | on | Overdue and due-today counts (desktop). |
+| Suggest dates and priorities while typing | on | The `@` suggestions on checklist lines. |
+| Trigger character | `@` | What opens them (up to 3 characters, no spaces). |
+| Task actions in the editor menu | on | Due date and priority items when right-clicking a checklist line. |
 
 ## Privacy & Security
 

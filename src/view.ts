@@ -14,21 +14,12 @@ import {
 } from "./arrange";
 import { GROUP_OPTIONS, SORT_OPTIONS } from "./settings";
 import { PRIORITY_NAMES, Priority, Task } from "./task";
-import { DueDateModal } from "./modals";
+import { DueDateModal, PRIORITY_ICON } from "./modals";
 
 export const VIEW_TYPE_DOCKET = "task-docket-view";
 
 /** Tasks shown per group before "Show more". Keeps very large vaults responsive. */
 const PAGE = 50;
-
-const PRIORITY_ICON: Record<Priority, string | null> = {
-	5: "chevrons-up",
-	4: "chevron-up",
-	3: "minus",
-	2: null,
-	1: "chevron-down",
-	0: "chevrons-down",
-};
 
 interface DocketState {
 	sort: SortMode;

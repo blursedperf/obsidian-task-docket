@@ -1,10 +1,11 @@
-import { Menu, Notice, Platform, Plugin, TFile, WorkspaceLeaf, debounce, normalizePath } from "obsidian";
+import { Editor, Menu, Notice, Platform, Plugin, TFile, WorkspaceLeaf, debounce, normalizePath } from "obsidian";
 import { TaskIndex } from "./index";
 import { TaskDocketView, VIEW_TYPE_DOCKET } from "./view";
 import { DEFAULT_SETTINGS, TaskDocketSettingTab, TaskDocketSettings } from "./settings";
-import { AddTaskModal, NewTask } from "./modals";
+import { AddTaskModal, DueDateModal, NewTask, PriorityModal } from "./modals";
+import { TaskPropertySuggest, inCodeOrFrontmatter, rewriteTaskLine, taskOnLine } from "./suggest";
 import { Priority, Task, buildTaskLine, setDueLine, setPriorityLine, toggleTaskLine } from "./task";
-import { isoDate, whenBucket } from "./arrange";
+import { addDays, isoDate, whenBucket } from "./arrange";
 
 export default class TaskDocketPlugin extends Plugin {
 	settings: TaskDocketSettings = { ...DEFAULT_SETTINGS };
@@ -23,6 +24,43 @@ export default class TaskDocketPlugin extends Plugin {
 		this.addCommand({ id: "open", name: "Open", callback: () => void this.activateView() });
 		this.addCommand({ id: "add-task", name: "Add task", callback: () => this.openAddTask() });
 		this.addCommand({ id: "rebuild", name: "Rescan tasks", callback: () => void this.index.rebuild() });
+
+		this.registerEditorSuggest(new TaskPropertySuggest(this));
+		this.addCommand({
+			id: "set-due-at-cursor",
+			name: "Set due date for task at cursor",
+			icon: "calendar-clock",
+			editorCheckCallback: (checking, editor) => this.withCursorTask(editor, checking, (line) => this.pickDue(editor, line)),
+		});
+		this.addCommand({
+			id: "set-priority-at-cursor",
+			name: "Set priority for task at cursor",
+			icon: "flag",
+			editorCheckCallback: (checking, editor) => this.withCursorTask(editor, checking, (line) => this.pickPriority(editor, line)),
+		});
+		this.addCommand({
+			id: "clear-due-at-cursor",
+			name: "Clear due date for task at cursor",
+			icon: "calendar-x",
+			editorCheckCallback: (checking, editor) =>
+				this.withCursorTask(editor, checking, (line) => this.setLineDue(editor, line, null), (t) => !!t.due),
+		});
+		this.registerEvent(
+			this.app.workspace.on("editor-menu", (menu, editor, info) => {
+				if (!this.settings.editorMenu) return;
+				const line = editor.getCursor().line;
+				const task = taskOnLine(editor, line);
+				if (!task || inCodeOrFrontmatter(this.app, info.file, line)) return;
+				const today = isoDate(new Date());
+				const item = (title: string, icon: string, run: () => void) =>
+					menu.addItem((i) => i.setTitle(title).setIcon(icon).setSection("task-docket").onClick(run));
+				item("Task due today", "calendar-check", () => this.setLineDue(editor, line, today));
+				item("Task due tomorrow", "calendar-plus", () => this.setLineDue(editor, line, addDays(today, 1)));
+				item("Set task due date…", "calendar-clock", () => this.pickDue(editor, line));
+				if (task.due) item("Clear task due date", "calendar-x", () => this.setLineDue(editor, line, null));
+				item("Set task priority…", "flag", () => this.pickPriority(editor, line));
+			})
+		);
 
 		this.addSettingTab(new TaskDocketSettingTab(this.app, this));
 
@@ -166,6 +204,33 @@ export default class TaskDocketPlugin extends Plugin {
 		if (!(file instanceof TFile)) return;
 		const leaf = this.app.workspace.getLeaf(newTab ? "tab" : false);
 		await leaf.openFile(file, { eState: { line: task.line } });
+	}
+
+	/* ---------- editing in the note ---------- */
+
+	/** Run an action for the task under the cursor; commands are only offered on task lines. */
+	private withCursorTask(editor: Editor, checking: boolean, run: (line: number) => void, when: (t: Task) => boolean = () => true): boolean {
+		const line = editor.getCursor().line;
+		const task = taskOnLine(editor, line);
+		if (!task || !when(task)) return false;
+		if (!checking) run(line);
+		return true;
+	}
+
+	private setLineDue(editor: Editor, line: number, date: string | null, time: string | null = null): void {
+		rewriteTaskLine(editor, line, (raw) => setDueLine(raw, date, time, this.settings.metadataFormat));
+	}
+
+	private pickDue(editor: Editor, line: number): void {
+		const task = taskOnLine(editor, line);
+		new DueDateModal(this.app, task ?? {}, (date, time) => this.setLineDue(editor, line, date, time)).open();
+	}
+
+	private pickPriority(editor: Editor, line: number): void {
+		const task = taskOnLine(editor, line);
+		new PriorityModal(this.app, task?.priority ?? 2, (p) =>
+			rewriteTaskLine(editor, line, (raw) => setPriorityLine(raw, p, this.settings.metadataFormat))
+		).open();
 	}
 
 	/* ---------- adding ---------- */

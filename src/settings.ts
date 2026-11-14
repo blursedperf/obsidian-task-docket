@@ -18,6 +18,12 @@ export interface TaskDocketSettings {
 	showStatusBar: boolean;
 	/** Where the docket opens. */
 	openIn: "tab" | "sidebar";
+	/** Typing the trigger on a task line offers dates, times and priorities. */
+	inlineSuggest: boolean;
+	/** The character that opens those suggestions. */
+	inlineTrigger: string;
+	/** Due date and priority items in the editor's right-click menu on task lines. */
+	editorMenu: boolean;
 }
 
 export const DEFAULT_SETTINGS: TaskDocketSettings = {
@@ -29,6 +35,9 @@ export const DEFAULT_SETTINGS: TaskDocketSettings = {
 	defaultGroup: "when",
 	showStatusBar: true,
 	openIn: "tab",
+	inlineSuggest: true,
+	inlineTrigger: "@",
+	editorMenu: true,
 };
 
 export const SORT_OPTIONS: Record<SortMode, string> = {
@@ -86,6 +95,29 @@ export class TaskDocketSettingTab extends PluginSettingTab {
 							key: "metadataFormat",
 							options: { emoji: "Tasks emoji (📅 2026-11-13 ⏫)", dataview: "Dataview fields ([due:: 2026-11-13])" },
 						},
+					},
+				],
+			},
+			{
+				type: "group",
+				heading: "Writing tasks",
+				items: [
+					{
+						name: "Suggest dates and priorities while typing",
+						desc: "On a checklist line, type @ to set a due date, time or priority: @tomorrow, @fri 9am, @17:00, @3d, @high, @!!.",
+						aliases: ["inline", "autocomplete", "due date", "natural language"],
+						control: { type: "toggle", key: "inlineSuggest" },
+					},
+					{
+						name: "Trigger character",
+						desc: "What opens the suggestions. It only works at the start of a word on a checklist line, so e-mail addresses are safe.",
+						control: { type: "text", key: "inlineTrigger", placeholder: "@" },
+					},
+					{
+						name: "Task actions in the editor menu",
+						desc: "Right-click a checklist line to set its due date or priority.",
+						aliases: ["context menu", "right click"],
+						control: { type: "toggle", key: "editorMenu" },
 					},
 				],
 			},

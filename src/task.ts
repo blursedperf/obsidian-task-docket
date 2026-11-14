@@ -227,9 +227,20 @@ export function toggleTaskLine(raw: string, today: string, stampDone: boolean, f
 	return out;
 }
 
+const EMOJI_METADATA = /[📅🗓⏳🛫✅❌➕⏰🔺⏫🔼🔽⏬]/u;
+const FIELD_METADATA = /[[(]\s*(?:due|time|priority|scheduled|start|completion|created|cancelled)\s*::/i;
+
+/** The format a line already uses for its metadata; the setting decides only for a bare line. */
+export function lineFormat(raw: string, fallback: MetadataFormat): MetadataFormat {
+	const emoji = EMOJI_METADATA.test(raw);
+	const field = FIELD_METADATA.test(raw);
+	if (emoji !== field) return emoji ? "emoji" : "dataview";
+	return fallback;
+}
+
 /** Set or clear the due date (and optionally its time), keeping the line's existing format. */
 export function setDueLine(raw: string, date: string | null, time: string | null, format: MetadataFormat): string {
-	const usesField = /[[(]\s*due\s*::/i.test(raw) || (!/📅|🗓/u.test(raw) && format === "dataview");
+	const usesField = /[[(]\s*due\s*::/i.test(raw) || (!/📅|🗓/u.test(raw) && lineFormat(raw, format) === "dataview");
 	let out = raw.replace(/\s*(?:📅|🗓️?)️?\s*\d{4}-\d{2}-\d{2}(?:[ T]\d{1,2}:\d{2})?/u, "");
 	out = removeField(out, "due");
 	out = out.replace(/\s*⏰️?\s*\d{1,2}:\d{2}/u, "");
@@ -242,7 +253,7 @@ export function setDueLine(raw: string, date: string | null, time: string | null
 
 /** Set the priority, keeping the line's existing format. */
 export function setPriorityLine(raw: string, priority: Priority, format: MetadataFormat): string {
-	const usesField = /[[(]\s*priority\s*::/i.test(raw) || (!/[🔺⏫🔼🔽⏬]/u.test(raw) && format === "dataview");
+	const usesField = /[[(]\s*priority\s*::/i.test(raw) || (!/[🔺⏫🔼🔽⏬]/u.test(raw) && lineFormat(raw, format) === "dataview");
 	let out = raw.replace(/\s*[🔺⏫🔼🔽⏬]/gu, "");
 	out = removeField(out, "priority").replace(/\s+$/, "");
 	if (priority === 2) return out;
