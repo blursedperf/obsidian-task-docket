@@ -1,4 +1,4 @@
-import { Notice, Platform, Plugin, TFile, WorkspaceLeaf, debounce, normalizePath } from "obsidian";
+import { Menu, Notice, Platform, Plugin, TFile, WorkspaceLeaf, debounce, normalizePath } from "obsidian";
 import { TaskIndex } from "./index";
 import { TaskDocketView, VIEW_TYPE_DOCKET } from "./view";
 import { DEFAULT_SETTINGS, TaskDocketSettingTab, TaskDocketSettings } from "./settings";
@@ -19,7 +19,7 @@ export default class TaskDocketPlugin extends Plugin {
 		this.index = this.addChild(new TaskIndex(this.app, () => this.excludedFolders()));
 		this.registerView(VIEW_TYPE_DOCKET, (leaf) => new TaskDocketView(leaf, this));
 
-		this.addRibbonIcon("list-checks", "Open task docket", () => void this.activateView());
+		this.addRibbonIcon("list-checks", "Task docket", (evt) => this.openRibbonMenu(evt));
 		this.addCommand({ id: "open", name: "Open", callback: () => void this.activateView() });
 		this.addCommand({ id: "add-task", name: "Add task", callback: () => this.openAddTask() });
 		this.addCommand({ id: "rebuild", name: "Rescan tasks", callback: () => void this.index.rebuild() });
@@ -84,6 +84,16 @@ export default class TaskDocketPlugin extends Plugin {
 			this.statusEl.setAttr("aria-label", "Open task docket");
 			this.registerDomEvent(this.statusEl, "click", () => void this.activateView());
 		}
+		const { overdue, dueToday } = this.dueCounts();
+		this.statusEl.empty();
+		this.statusEl.toggleClass("has-overdue", overdue > 0);
+		this.statusEl.setText(
+			overdue || dueToday ? [overdue ? `${overdue} overdue` : "", dueToday ? `${dueToday} due today` : ""].filter(Boolean).join(" · ") : "No tasks due"
+		);
+	}
+
+	/** Open tasks that are overdue or due today. */
+	dueCounts(): { overdue: number; dueToday: number } {
 		const today = isoDate(new Date());
 		let overdue = 0;
 		let dueToday = 0;
@@ -93,11 +103,19 @@ export default class TaskDocketPlugin extends Plugin {
 			if (b === "overdue") overdue++;
 			else if (b === "today") dueToday++;
 		}
-		this.statusEl.empty();
-		this.statusEl.toggleClass("has-overdue", overdue > 0);
-		this.statusEl.setText(
-			overdue || dueToday ? [overdue ? `${overdue} overdue` : "", dueToday ? `${dueToday} due today` : ""].filter(Boolean).join(" · ") : "No tasks due"
-		);
+		return { overdue, dueToday };
+	}
+
+	/** The ribbon button: today's counts at a glance, then the docket's actions. */
+	private openRibbonMenu(evt: MouseEvent): void {
+		const { overdue, dueToday } = this.dueCounts();
+		const summary = [overdue ? `${overdue} overdue` : "", dueToday ? `${dueToday} due today` : ""].filter(Boolean).join(" · ") || "No tasks due today";
+		const menu = new Menu();
+		menu.addItem((i) => i.setTitle(summary).setIcon(overdue ? "alert-circle" : "calendar-check").setSection("summary").setDisabled(true));
+		menu.addItem((i) => i.setTitle("Open task docket").setIcon("list-checks").setSection("actions").onClick(() => void this.activateView()));
+		menu.addItem((i) => i.setTitle("Add task…").setIcon("plus").setSection("actions").onClick(() => this.openAddTask()));
+		menu.addItem((i) => i.setTitle("Rescan tasks").setIcon("refresh-cw").setSection("actions").onClick(() => void this.index.rebuild()));
+		menu.showAtMouseEvent(evt);
 	}
 
 	/* ---------- editing ---------- */
